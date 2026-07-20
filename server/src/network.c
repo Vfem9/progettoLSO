@@ -1,17 +1,42 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
+
+// Compatibilità Windows/Linux
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #pragma comment(lib, "ws2_32.lib")
+    
+    typedef int socklen_t;
+    #define close closesocket
+#else
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <unistd.h>
+    #include <fcntl.h>
+    
+    typedef int SOCKET;
+    #define INVALID_SOCKET -1
+    #define SOCKET_ERROR -1
+#endif
+
 #include "../include/network.h"
 
-// Inizializza Winsock (necessario su Windows)
+// Inizializza Winsock (solo su Windows)
+#ifdef _WIN32
 void init_winsock() {
     WSADATA wsa_data;
     WSAStartup(MAKEWORD(2, 2), &wsa_data);
 }
+#else
+void init_winsock() {
+    // Su Linux non serve
+}
+#endif
 
-// Crea il socket server
+// Crea il socket server che ascolta su una porta
 int create_server_socket(int port) {
     init_winsock();
     
@@ -21,26 +46,31 @@ int create_server_socket(int port) {
         return -1;
     }
     
-   
+    // Permette di riutilizzare la porta subito dopo
     int opt = 1;
-    setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt));
+    if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, (const char*)&opt, sizeof(opt)) == SOCKET_ERROR) {
+        printf("Errore: setsockopt fallito\n");
+        close(server_socket);
+        return -1;
+    }
     
     struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
     
-  
+    // Bind del socket alla porta
     if (bind(server_socket, (struct sockaddr*)&server_addr, sizeof(server_addr)) == SOCKET_ERROR) {
         printf("Errore: impossibile fare bind sulla porta %d\n", port);
-        closesocket(server_socket);
+        close(server_socket);
         return -1;
     }
     
-    // Mette il socket in ascolto
+    // Metti il socket in ascolto
     if (listen(server_socket, SOMAXCONN) == SOCKET_ERROR) {
         printf("Errore: impossibile mettere in ascolto il socket\n");
-        closesocket(server_socket);
+        close(server_socket);
         return -1;
     }
     
@@ -51,7 +81,7 @@ int create_server_socket(int port) {
 // Accetta una nuova connessione da un client
 int accept_client_connection(int server_socket) {
     struct sockaddr_in client_addr;
-    int client_addr_len = sizeof(client_addr);
+    socklen_t client_addr_len = sizeof(client_addr);
     
     SOCKET client_socket = accept((SOCKET)server_socket, (struct sockaddr*)&client_addr, &client_addr_len);
     if (client_socket == INVALID_SOCKET) {
@@ -96,7 +126,7 @@ Message receive_message(int socket_fd) {
     memset(&msg, 0, sizeof(Message));
     
     if (bytes_received <= 0) {
-        strcpy_s(msg.error, sizeof(msg.error), "Errore ricezione messaggio");
+        strcpy(msg.error, "Errore ricezione messaggio");
         return msg;
     }
     
@@ -107,5 +137,5 @@ Message receive_message(int socket_fd) {
 
 // Chiude la connessione con un client
 void close_connection(int socket_fd) {
-    closesocket((SOCKET)socket_fd);
+    close((SOCKET)socket_fd);
 }

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  forza4_server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: forza4_server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MAX_CLIENTS=10
+    volumes:
+      - ./server/logs:/app/logs
+    networks:
+      - forza4_network
+    restart: on-failure:5
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "5000"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  forza4_network:
+    driver: bridge

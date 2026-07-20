@@ -1,4 +1,4 @@
- #ifndef GAME_H
+#ifndef GAME_H
 #define GAME_H
 
 #define BOARD_ROWS 6

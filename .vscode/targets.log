@@ -8,7 +8,7 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 # This program built for i386-pc-mingw32
  
 
-# Make data base, printed on Mon Jul 20 14:40:36 2026
+# Make data base, printed on Mon Jul 20 16:07:50 2026
 
 # Variables
 
@@ -34,8 +34,7 @@ HOMEDRIVE = C:
 CURDIR := c:/Users/pasqu/Desktop/progettoLSO
 # default
 SHELL := sh.exe
-# e 
-nvironment
+# environment
 WINDIR = C:\WINDOWS
 # environment
 VSCODE_NLS_CONFIG = {"userLocale":"en-us","osLocale":"it-it","resolvedLanguage":"en","defaultMessagesFile":"C:\\Users\\pasqu\\AppData\\Local\\Programs\\Microsoft VS Code\\8a7abeba6e\\resources\\app\\out\\nls.messages.json","locale":"en-us","availableLanguages":{}}
@@ -46,8 +45,7 @@ PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
 # makefile
 MAKEFILE_LIST := 
 # environment
-TMP = C:\Users\pasqu\AppData\Loc 
-al\Temp
+TMP = C:\Users\pasqu\AppData\Local\Temp
 # environment
 MXC_BIN_DIR = c:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\8a7abeba6e\resources\app\node_modules.asar.unpacked\@microsoft\mxc-sdk\bin
 # environment
@@ -57,8 +55,7 @@ PROGRAMDATA = C:\ProgramData
 # environment
 VSCODE_CWD = C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code
 # environment
-PATH = C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\maven\apache-maven-3.9.16\bin;C:\gcc\mingw64\bin;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Gi 
-t\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps;C:\Users\pasqu\AppData\Local\GitHubDesktop\bin;C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin
+PATH = C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\maven\apache-maven-3.9.16\bin;C:\gcc\mingw64\bin;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps;C:\Users\pasqu\AppData\Local\GitHubDesktop\bin;C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin
 # environment
 COMMONPROGRAMW6432 = C:\Program Files\Common Files
 # environment
@@ -68,8 +65,7 @@ CHOCOLATEYLASTPATHUPDATE = 134290141168014281
 # environment
 PROCESSOR_ARCHITECTURE = x86
 # environment
-USERPROFILE = C:\ 
-Users\pasqu
+USERPROFILE = C:\Users\pasqu
 # environment
 CHOCOLATEYINSTALL = C:\ProgramData\chocolatey
 # environment
@@ -89,8 +85,7 @@ CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_3780_AUWXPKMURYYGJDML
 # environment
 COMPUTERNAME = RISIKOS
 # environment
-PROGRAMFILES = C:\Program File 
-s (x86)
+PROGRAMFILES = C:\Program Files (x86)
 # environment
 DRIVERDATA = C:\Windows\System32\Drivers\DriverData
 # environment
@@ -220,7 +215,7 @@ USERDOMAIN_ROAMINGPROFILE = RISIKOS
 # C:\WINDOWS\System32\WindowsPowerShell\v1.0\ (key C:/WIND 
 OWS/System32/WindowsPowerShell/v1.0/, mtime 1784480969): 28 files, no impossibilities.
 # C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1783943378): 159 files, no impossibilities.
-# . (key c:/Users/pasqu/Desktop/progettoLSO, mtime 1784550943): 10 files, no impossibilities.
+# . (key c:/Users/pasqu/Desktop/progettoLSO, mtime 1784555138): 11 files, no impossibilities.
 # C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/pasqu/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1784542523): 5 files, no impossibilities.
 # C:\Program Files\Eclipse Adoptium\jdk-25.0.3. 
 9-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-25.0.3.9-hotspot/bin, mtime 1784542947): 129 files, no impossibilities.
@@ -237,7 +232,7 @@ OWS/System32/WindowsPowerShell/v1.0/, mtime 1784480969): 28 files, no impossibil
 /system32, mtime 1784541935): 2912 files, no impossibilities.
 # C:\Program Files (x86)\GnuWin32\bin (key C:/Program Files (x86)/GnuWin32/bin, mtime 1784550844): 5 files, no impossibilities.
 
-# 3504 files, no impossibilities in 17 directories.
+# 3505 files, no impossibilities in 17 directories.
 
 # Implicit Rules
 
@@ -302,7 +297,7 @@ of strcache buffers: 0
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Mon Jul 20 14:40:36 2026
+# Finished Make data base on Mon Jul 20 16:07:50 2026
 
  
 make.exe: *** No rule to make target `all'.  Stop.

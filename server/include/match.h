@@ -29,5 +29,9 @@ typedef struct {
 
 Match* create_match(int creator_id, const char* match_id);
 void destroy_match(Match* m);
+int add_player_to_match(Match* m, int player_id);
+int apply_match_move(Match* m, int player_id, int column);
+int is_match_active(Match* m);
+void abandon_match(Match* m, int player_id);
 
 #endif

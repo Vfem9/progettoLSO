@@ -6,9 +6,8 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 # PARTICULAR PURPOSE.
 
 # This program built for i386-pc-mingw32
- 
 
-# Make data base, printed on Mon Jul 20 16:07:50 2026
+# Make data base, printed on Tue Jul 21 12:48:17 2026
 
 # Variables
 
@@ -41,6 +40,8 @@ VSCODE_NLS_CONFIG = {"userLocale":"en-us","osLocale":"it-it","resolvedLanguage":
 # environment
 ONEDRIVE = C:\Users\pasqu\OneDrive
 # environment
+VSCODE_PID = 8940
+# environment
 PATHEXT = .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
 # makefile
 MAKEFILE_LIST := 
@@ -71,8 +72,6 @@ CHOCOLATEYINSTALL = C:\ProgramData\chocolatey
 # environment
 ALLUSERSPROFILE = C:\ProgramData
 # environment
-EFC_5228_1592913036 = 1
-# environment
 NUMBER_OF_PROCESSORS = 4
 # environment
 ELECTRON_RUN_AS_NODE = 1
@@ -81,7 +80,7 @@ ELECTRON_RUN_AS_NODE = 1
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_3780_AUWXPKMURYYGJDML
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_8940_IMCDPZKZGFCJCOZP
 # environment
 COMPUTERNAME = RISIKOS
 # environment
@@ -102,8 +101,7 @@ COMMONPROGRAMFILES = C:\Program Files (x86)\Common Files
 LOGONSERVER = \\RISIKOS
 # environment
 ONEDRIVECONSUMER = C:\Users\pasqu\OneDrive
-# environme 
-nt
+# environment
 VSCODE_HANDLES_UNCAUGHT_ERRORS = true
 # environment
 USERDOMAIN = RISIKOS
@@ -112,11 +110,11 @@ MAKE = $(MAKE_COMMAND)
 # default
 MAKECMDGOALS := all
 # environment
+EFC_6604_1592913036 = 1
+# environment
 VSCODE_ESM_ENTRYPOINT = vs/workbench/api/node/extensionHostProcess
 # default
 MAKE_VERSION := 3.81
-# environment
-COPILOT_OTEL_FILE_EXPORTER_PATH = \\.\nul
 # makefile
 .DEFAULT_GOAL := 
 # environment
@@ -126,8 +124,7 @@ PROGRAMFILES(X86) = C:\Program Files (x86)
 # automatic
 %D = $(patsubst %/,%,$(dir $%))
 # environment
-LOCALA 
-PPDATA = C:\Users\pasqu\AppData\Local
+LOCALAPPDATA = C:\Users\pasqu\AppData\Local
 # environment
 PSMODULEPATH = C:\Program Files\WindowsPowerShell\Modules;C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules
 # default
@@ -145,8 +142,7 @@ OS = Windows_NT
 # environment
 VSCODE_IPC_HOOK = \\.\pipe\f75892c6-1.129.1-main-sock
 # environment
-HOMEPATH = \User 
-s\pasqu
+HOMEPATH = \Users\pasqu
 # environment
 COMMONPROGRAMFILES(X86) = C:\Program Files (x86)\Common Files
 # environment
@@ -157,21 +153,14 @@ MFLAGS = -Rrqp
 *D = $(patsubst %/,%,$(dir $*))
 # environment
 SYSTEMROOT = C:\WINDOWS
-# environment
-EFC_5228_4126798990 = 1
 # automatic
 +D = $(patsubst %/,%,$(dir $+))
-# environment
-VSCODE_L10N_BUNDLE_LOCATION = 
 # automatic
 +F = $(notdir $+)
 # environment
 APPDATA = C:\Users\pasqu\AppData\Roaming
 # environment
-__COMPAT_LAYER = DetectorsAppHealth
-# environment
-TEMP = C:\Use 
-rs\pasqu\AppData\Local\Temp
+TEMP = C:\Users\pasqu\AppData\Local\Temp
 # environment
 COMSPEC = C:\WINDOWS\system32\cmd.exe
 # default
@@ -197,12 +186,11 @@ LANG = C
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-VSCODE_PID = 3780
+EFC_6604_4126798990 = 1
 # environment
 USERDOMAIN_ROAMINGPROFILE = RISIKOS
-# variable set hash-table 
- stats:
-# Load=92/1024=9%, Rehash=0, Collisions=9/109=8%
+# variable set hash-table stats:
+# Load=89/1024=9%, Rehash=0, Collisions=10/106=9%
 
 # Pattern-specific Variable Values
 
@@ -212,24 +200,20 @@ USERDOMAIN_ROAMINGPROFILE = RISIKOS
 
 # C:\Program Files\Common Files\Oracle\Java\javapath (key C:/Program Files/Common Files/Oracle/Java/javapath, mtime 1784478755): 6 files, no impossibilities.
 # C:\Program Files\Docker\Docker\resources\bin (key C:/Program Files/Docker/Docker/resources/bin, mtime 1784479941): 12 files, no impossibilities.
-# C:\WINDOWS\System32\WindowsPowerShell\v1.0\ (key C:/WIND 
-OWS/System32/WindowsPowerShell/v1.0/, mtime 1784480969): 28 files, no impossibilities.
+# C:\WINDOWS\System32\WindowsPowerShell\v1.0\ (key C:/WINDOWS/System32/WindowsPowerShell/v1.0/, mtime 1784480969): 28 files, no impossibilities.
 # C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1783943378): 159 files, no impossibilities.
 # . (key c:/Users/pasqu/Desktop/progettoLSO, mtime 1784555138): 11 files, no impossibilities.
 # C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/pasqu/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1784542523): 5 files, no impossibilities.
-# C:\Program Files\Eclipse Adoptium\jdk-25.0.3. 
-9-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-25.0.3.9-hotspot/bin, mtime 1784542947): 129 files, no impossibilities.
+# C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-25.0.3.9-hotspot/bin, mtime 1784542947): 129 files, no impossibilities.
 # C:\WINDOWS\System32\OpenSSH\: could not be stat'd.
 # C:\WINDOWS (key C:/WINDOWS, mtime 1784480998): 108 files, no impossibilities.
 # C:\maven\apache-maven-3.9.16\bin (key C:/maven/apache-maven-3.9.16/bin, mtime 1784484005): 8 files, no impossibilities.
-# C:\Users\pasqu\AppData\Local\GitHubDesktop\bin (key C:/Users/pasqu/AppData/Local/GitHubDesktop/bin, mtime 1784480103): 4 files 
-, no impossibilities.
+# C:\Users\pasqu\AppData\Local\GitHubDesktop\bin (key C:/Users/pasqu/AppData/Local/GitHubDesktop/bin, mtime 1784480103): 4 files, no impossibilities.
 # C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps (key C:/Users/pasqu/AppData/Local/Microsoft/WindowsApps, mtime 1784481860): 45 files, no impossibilities.
 # C:\gcc\mingw64\bin (key C:/gcc/mingw64/bin, mtime 1779711451): 60 files, no impossibilities.
 # C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin: could not be stat'd.
 # C:\Program Files\Git\cmd (key C:/Program Files/Git/cmd, mtime 1784478439): 13 files, no impossibilities.
-# C:\WINDOWS\system32 (key C:/WINDOWS 
-/system32, mtime 1784541935): 2912 files, no impossibilities.
+# C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1784572795): 2912 files, no impossibilities.
 # C:\Program Files (x86)\GnuWin32\bin (key C:/Program Files (x86)/GnuWin32/bin, mtime 1784550844): 5 files, no impossibilities.
 
 # 3505 files, no impossibilities in 17 directories.
@@ -249,8 +233,7 @@ all:
 # variable set hash-table stats:
 # Load=0/32=0%, Rehash=0, Collisions=0/0=0%
 
-# N 
-ot a target:
+# Not a target:
 .DEFAULT:
 #  Implicit rule search has not been done.
 #  Modification time never checked.
@@ -269,8 +252,7 @@ makefile:
 # Not a target:
 .SUFFIXES:
 #  Implicit rule search has not been done.
-#  Modification time never checked. 
-
+#  Modification time never checked.
 #  File has not been updated.
 
 # Not a target:
@@ -292,12 +274,11 @@ GNUmakefile:
 # No general (`VPATH' variable) search path.
 
 # # of strings in strcache: 0
-# #  
-of strcache buffers: 0
+# # of strcache buffers: 0
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Mon Jul 20 16:07:50 2026
+# Finished Make data base on Tue Jul 21 12:48:17 2026
 
  
 make.exe: *** No rule to make target `all'.  Stop.

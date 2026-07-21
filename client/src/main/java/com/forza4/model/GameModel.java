@@ -1,106 +1,139 @@
- package com.forza4.model;
+package com.forza4.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observer;
-
-// Model che contiene lo stato del gioco
+// Model che contiene lo stato del gioco lato client.
 public class GameModel {
-    private int[][] board; // Board 6x7
-    private int currentTurn; // Turno attuale (1 o 2)
-    private String currentMatchId; // ID della partita attuale
-    private String playerUsername; // Username del giocatore
-    private List<String> availableMatches; // Lista partite disponibili
-    private List<Observer> observers; // Observer per la GUI
-    
-    // Costruttore
+
+    public static final int STATE_NONE = 0;      // nessuna partita
+    public static final int STATE_WAITING = 1;   // creata, in attesa dell'avversario
+    public static final int STATE_ACTIVE = 2;    // partita in corso
+    public static final int STATE_FINISHED = 3;  // vittoria/pareggio/abbandono
+    // FIX: nuovo stato per chi ha appena richiesto di unirsi a una partita e
+    // sta aspettando che il creatore accetti/rifiuti (schermata di attesa
+    // dedicata, distinta da STATE_WAITING che invece e' quella del creatore
+    // che aspetta un avversario con la board gia' visibile).
+    public static final int STATE_JOIN_PENDING = 4;
+
+    private int[][] board;              // Board 6x7 (0 = vuoto, 1 = rosso, 2 = giallo)
+    private int currentTurn;            // Simbolo (1 o 2) di chi deve muovere ora
+    private String currentMatchId;      // ID della partita attuale
+    private String playerUsername;      // Username scelto/generato per questo client
+
+    private int myPlayerId = -1;        // id assegnato dal server alla connessione (register)
+    private int myPlayerNumber = 0;     // 1 o 2: sono il creatore o chi si e' unito?
+    private int opponentId = -1;
+    private String opponentUsername;    // username scelto dall'avversario (server -> client)
+    private int matchState = STATE_NONE;
+    // FIX: "0" come sentinella di "nessuno/pareggio" collideva col vero
+    // player_id del primo client connesso al server (gli id partono da 0):
+    // quando quel giocatore vinceva, winnerId valeva 0 sia per "ha vinto lui"
+    // sia per "nessun vincitore", ed entrambi i client mostravano "Hai perso".
+    // -1 non e' mai un player_id valido, quindi e' una sentinella sicura.
+    private int winnerId = -1;          // player_id del vincitore, -1 se nessuno/pareggio
+
     public GameModel() {
         this.board = new int[6][7];
         this.currentTurn = 1;
         this.currentMatchId = null;
         this.playerUsername = null;
-        this.availableMatches = new ArrayList<>();
-        this.observers = new ArrayList<>();
-        
-        initBoard();
     }
-    
-    // Inizializza il board vuoto
+
     private void initBoard() {
-        for (int row = 0; row < 6; row++) {
-            for (int col = 0; col < 7; col++) {
-                board[row][col] = 0;
-            }
-        }
+        board = new int[6][7];
     }
-    
-    // Aggiorna il model dai messaggi del server
-    public void updateFromMessage(String message) {
-        // TODO: Parsare il JSON e aggiornare il model
-        System.out.println("Model aggiornato dal messaggio: " + message);
-        notifyObservers();
+
+    public void resetForNewMatch() {
+        initBoard();
+        currentTurn = 1;
+        matchState = STATE_WAITING;
+        winnerId = -1;
     }
-    
-    // Aggiunge un observer (una view che ascolta i cambiamenti)
-    public void addObserver(Observer observer) {
-        observers.add(observer);
-    }
-    
-    // Notifica tutti gli observer che il model è cambiato
-    public void notifyObservers() {
-        for (Observer observer : observers) {
-            observer.update(null, null);
-        }
-    }
-    
-    // Getter e Setter
+
     public int[][] getBoard() {
         return board;
     }
-    
+
     public void setBoard(int[][] board) {
         this.board = board;
-        notifyObservers();
     }
-    
+
     public int getCurrentTurn() {
         return currentTurn;
     }
-    
+
     public void setCurrentTurn(int turn) {
         this.currentTurn = turn;
-        notifyObservers();
     }
-    
+
     public String getCurrentMatchId() {
         return currentMatchId;
     }
-    
+
     public void setCurrentMatchId(String matchId) {
         this.currentMatchId = matchId;
-        notifyObservers();
     }
-    
+
     public String getPlayerUsername() {
         return playerUsername;
     }
-    
+
     public void setPlayerUsername(String username) {
         this.playerUsername = username;
-        notifyObservers();
     }
-    
-    public List<String> getAvailableMatches() {
-        return availableMatches;
+
+    public int getMyPlayerId() {
+        return myPlayerId;
     }
-    
-    public void addAvailableMatch(String match) {
-        availableMatches.add(match);
-        notifyObservers();
+
+    public void setMyPlayerId(int myPlayerId) {
+        this.myPlayerId = myPlayerId;
     }
-    
-    public void clearAvailableMatches() {
-        availableMatches.clear();
-        notifyObservers();
+
+    public int getMyPlayerNumber() {
+        return myPlayerNumber;
+    }
+
+    public void setMyPlayerNumber(int myPlayerNumber) {
+        this.myPlayerNumber = myPlayerNumber;
+    }
+
+    public int getOpponentId() {
+        return opponentId;
+    }
+
+    public void setOpponentId(int opponentId) {
+        this.opponentId = opponentId;
+    }
+
+    public String getOpponentUsername() {
+        return opponentUsername;
+    }
+
+    public void setOpponentUsername(String opponentUsername) {
+        this.opponentUsername = opponentUsername;
+    }
+
+    public int getMatchState() {
+        return matchState;
+    }
+
+    public void setMatchState(int matchState) {
+        this.matchState = matchState;
+    }
+
+    public int getWinnerId() {
+        return winnerId;
+    }
+
+    public void setWinnerId(int winnerId) {
+        this.winnerId = winnerId;
+    }
+
+    // true se il colore/simbolo di questo client corrisponde al turno attuale
+    public boolean isMyTurn() {
+        return matchState == STATE_ACTIVE && myPlayerNumber != 0 && myPlayerNumber == currentTurn;
+    }
+
+    public boolean amIWinner() {
+        return winnerId != -1 && winnerId == myPlayerId;
     }
 }

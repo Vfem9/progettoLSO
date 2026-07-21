@@ -4,30 +4,25 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- Informazioni progetto -->
     <groupId>com.forza4</groupId>
     <artifactId>forza4-client</artifactId>
     <version>1.0</version>
     <name>Forza 4 Client</name>
     <description>Client Java per gioco Forza 4 multi-client</description>
 
-    <!-- Proprietà -->
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <!-- Dipendenze (librerie esterne) -->
     <dependencies>
-        <!-- JSON parsing -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
 
-        <!-- JUnit per i test -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -36,10 +31,8 @@
         </dependency>
     </dependencies>
 
-    <!-- Build configuration -->
     <build>
         <plugins>
-            <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -50,7 +43,6 @@
                 </configuration>
             </plugin>
 
-            <!-- JAR plugin per creare l'eseguibile -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -65,7 +57,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Assembly plugin per creare JAR con tutte le dipendenze -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>

@@ -1,78 +1,74 @@
- package com.forza4.network;
+package com.forza4.network;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
-// Client TCP per comunicare col server Forza 4
 public class NetworkClient {
     private String host;
     private int port;
     private Socket socket;
-    private PrintWriter output;
+    private OutputStream output;
     private BufferedReader input;
     private Thread messageReaderThread;
     private MessageListener listener;
     private volatile boolean connected = false;
-    
-    // Interfaccia per ricevere i callback dai messaggi
+
     public interface MessageListener {
         void onMessageReceived(String message);
         void onConnectionClosed();
         void onError(String error);
     }
-    
-    // Costruttore
+
     public NetworkClient(String host, int port, MessageListener listener) {
         this.host = host;
         this.port = port;
         this.listener = listener;
     }
-    
-    // Connette al server
+
     public void connect() throws IOException {
         try {
             socket = new Socket(host, port);
-            output = new PrintWriter(socket.getOutputStream(), true);
-            input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            output = socket.getOutputStream();
+            input = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             connected = true;
-            
+
             System.out.println("Connesso a " + host + ":" + port);
-            
-            // Avvia il thread che legge i messaggi dal server
+
             startMessageReaderThread();
-            
+
         } catch (IOException e) {
             System.err.println("Errore di connessione: " + e.getMessage());
             throw e;
         }
     }
-    
-    // Avvia il thread che legge continuamente i messaggi dal server
+
+    // FIX: prima si faceva polling ogni 50ms su input.available(), il che
+    // aggiungeva fino a 50ms di latenza per ogni messaggio (percepibile su una
+    // board che deve aggiornarsi "in tempo reale" ad ogni mossa) oltre a
+    // sprecare CPU. readLine() su un BufferedReader si blocca finche' non
+    // arriva una riga completa (i messaggi sono terminati da \n lato server),
+    // quindi e' sia piu' reattivo che piu' semplice.
     private void startMessageReaderThread() {
         messageReaderThread = new Thread(() -> {
             try {
                 String line;
-                // Rimane in loop finché il server non chiude la connessione
                 while (connected && (line = input.readLine()) != null) {
-                    System.out.println("Ricevuto dal server: " + line);
-                    
-                    // Chiama il callback con il messaggio ricevuto
-                    if (listener != null) {
-                        listener.onMessageReceived(line);
+                    String message = line.trim();
+                    if (!message.isEmpty()) {
+                        System.out.println("Ricevuto dal server: " + message);
+                        if (listener != null) {
+                            listener.onMessageReceived(message);
+                        }
                     }
                 }
-                
-                // Se arriviamo qui, il server ha chiuso la connessione
-                if (connected) {
-                    connected = false;
-                    if (listener != null) {
-                        listener.onConnectionClosed();
-                    }
+                // readLine() ha ritornato null: il server ha chiuso la connessione
+                if (connected && listener != null) {
+                    listener.onConnectionClosed();
                 }
-                
             } catch (IOException e) {
                 if (connected) {
                     System.err.println("Errore lettura messaggio: " + e.getMessage());
@@ -80,43 +76,48 @@ public class NetworkClient {
                         listener.onError("Errore lettura: " + e.getMessage());
                     }
                 }
+            } finally {
+                connected = false;
             }
         });
-        
+
         messageReaderThread.setDaemon(true);
         messageReaderThread.start();
     }
-    
-    // Invia un messaggio al server
-    public void sendMessage(String message) {
+
+    public synchronized void sendMessage(String message) {
         if (!connected) {
             System.err.println("Non connesso al server");
             return;
         }
-        
-        System.out.println("Inviato al server: " + message);
-        output.println(message);
+
+        try {
+            String msg = message + "\n";
+            output.write(msg.getBytes(StandardCharsets.UTF_8));
+            output.flush();
+            System.out.println("Inviato al server: " + message);
+        } catch (IOException e) {
+            System.err.println("Errore invio: " + e.getMessage());
+        }
     }
-    
-    // Disconnette dal server
+
     public void disconnect() {
         if (!connected) return;
-        
+
         connected = false;
-        
+
         try {
             if (socket != null) socket.close();
             if (output != null) output.close();
             if (input != null) input.close();
-            
+
             System.out.println("Disconnesso dal server");
-            
+
         } catch (IOException e) {
             System.err.println("Errore disconnessione: " + e.getMessage());
         }
     }
-    
-    // Ritorna se è connesso
+
     public boolean isConnected() {
         return connected;
     }

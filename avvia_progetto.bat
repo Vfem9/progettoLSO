@@ -8,7 +8,7 @@ pushd "%~dp0"
 echo ============================================
 echo  Avvio server Forza4 (Docker)...
 echo ============================================
-start "Server Forza4" cmd /k "docker compose up"
+start "Server Forza4" /min cmd /k "docker compose up"
 
 echo Attendo qualche secondo che il server sia pronto...
 timeout /t 8 /nobreak >nul
@@ -16,14 +16,14 @@ timeout /t 8 /nobreak >nul
 echo ============================================
 echo  Avvio client 1...
 echo ============================================
-start "Client Forza4 - 1" cmd /k "cd client && java -jar target\forza4-client-1.0.jar"
+start "Client Forza4 - 1" /min cmd /c "cd client && java -jar target\forza4-client-1.0.jar"
 
 timeout /t 2 /nobreak >nul
 
 echo ============================================
 echo  Avvio client 2...
 echo ============================================
-start "Client Forza4 - 2" cmd /k "cd client && java -jar target\forza4-client-1.0.jar"
+start "Client Forza4 - 2" /min cmd /c "cd client && java -jar target\forza4-client-1.0.jar"
 
 popd
 

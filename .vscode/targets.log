@@ -6,11 +6,8 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 # PARTICULAR PURPOSE.
 
 # This program built for i386-pc-mingw32
- 
-make.exe: *** No rule to make target `all'.  Stop.
 
-
-# Make data base, printed on Wed Jul 22 16:14:40 2026
+# Make data base, printed on Wed Jul 22 22:06:55 2026
 
 # Variables
 
@@ -57,11 +54,13 @@ PROGRAMDATA = C:\ProgramData
 # environment
 VSCODE_CWD = C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code
 # environment
-PATH = C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\maven\apache-maven-3.9.16\bin;C:\gcc\mingw64\bin;C:\Program Files (x86)\GnuWin32\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps;C:\Users\pasqu\AppData\Local\GitHubDesktop\bin;C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin
+PATH = C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\maven\apache-maven-3.9.16\bin;C:\gcc\mingw64\bin;C:\Program Files (x86)\GnuWin32\bin;;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Common Files\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\Git\cmd;C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin;C:\Program Files\Docker\Docker\resources\bin;C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps;C:\Users\pasqu\AppData\Local\GitHubDesktop\bin;C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin
 # environment
 COMMONPROGRAMW6432 = C:\Program Files\Common Files
 # environment
 ZES_ENABLE_SYSMAN = 1
+# environment
+EFC_13588_4126798990 = 1
 # environment
 CHOCOLATEYLASTPATHUPDATE = 134290141168014281
 # environment
@@ -81,7 +80,7 @@ ELECTRON_RUN_AS_NODE = 1
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_14080_KNNLZOWMBPSRYWEV
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_1904_LCTUQPSITDLTPVTC
 # environment
 COMPUTERNAME = RISIKOS
 # environment
@@ -189,11 +188,11 @@ LANG = C
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-VSCODE_PID = 14080
+VSCODE_PID = 1904
 # environment
 USERDOMAIN_ROAMINGPROFILE = RISIKOS
 # variable set hash-table stats:
-# Load=89/1024=9%, Rehash=0, Collisions=9/106=8%
+# Load=90/1024=9%, Rehash=0, Collisions=9/107=8%
 
 # Pattern-specific Variable Values
 
@@ -201,11 +200,12 @@ USERDOMAIN_ROAMINGPROFILE = RISIKOS
 
 # Directories
 
+# : could not be stat'd.
 # C:\Program Files\Common Files\Oracle\Java\javapath (key C:/Program Files/Common Files/Oracle/Java/javapath, mtime 1784478755): 6 files, no impossibilities.
-# C:\Program Files\Docker\Docker\resources\bin (key C:/Program Files/Docker/Docker/resources/bin, mtime 1784479941): 12 files, no impossibilities.
+# C:\Program Files\Docker\Docker\resources\bin (key C:/Program Files/Docker/Docker/resources/bin, mtime 1784750307): 12 files, no impossibilities.
 # C:\WINDOWS\System32\WindowsPowerShell\v1.0\ (key C:/WINDOWS/System32/WindowsPowerShell/v1.0/, mtime 1784480969): 28 files, no impossibilities.
 # C:\WINDOWS\System32\Wbem (key C:/WINDOWS/System32/Wbem, mtime 1783943378): 159 files, no impossibilities.
-# . (key c:/Users/pasqu/Desktop/progettoLSO, mtime 1784665848): 13 files, no impossibilities.
+# . (key c:/Users/pasqu/Desktop/progettoLSO, mtime 1784750729): 13 files, no impossibilities.
 # C:\Users\pasqu\AppData\Local\Programs\Microsoft VS Code\bin (key C:/Users/pasqu/AppData/Local/Programs/Microsoft VS Code/bin, mtime 1784542523): 5 files, no impossibilities.
 # C:\Program Files\Eclipse Adoptium\jdk-25.0.3.9-hotspot\bin (key C:/Program Files/Eclipse Adoptium/jdk-25.0.3.9-hotspot/bin, mtime 1784542947): 129 files, no impossibilities.
 # C:\WINDOWS\System32\OpenSSH\: could not be stat'd.
@@ -219,7 +219,7 @@ USERDOMAIN_ROAMINGPROFILE = RISIKOS
 # C:\WINDOWS\system32 (key C:/WINDOWS/system32, mtime 1784572795): 2912 files, no impossibilities.
 # C:\Program Files (x86)\GnuWin32\bin (key C:/Program Files (x86)/GnuWin32/bin, mtime 1784550844): 5 files, no impossibilities.
 
-# 3507 files, no impossibilities in 17 directories.
+# 3507 files, no impossibilities in 18 directories.
 
 # Implicit Rules
 
@@ -281,6 +281,8 @@ GNUmakefile:
 # strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
 # strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
 
-# Finished Make data base on Wed Jul 22 16:14:40 2026
+# Finished Make data base on Wed Jul 22 22:06:55 2026
 
  
+make.exe: *** No rule to make target `all'.  Stop.
+

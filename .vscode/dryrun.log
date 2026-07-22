@@ -1,6 +1,5 @@
 make.exe --dry-run --always-make --keep-going --print-directory
 make.exe: Entering directory `c:/Users/pasqu/Desktop/progettoLSO'
- 
 make.exe: Leaving directory `c:/Users/pasqu/Desktop/progettoLSO'
  
 make.exe: *** No targets specified and no makefile found.  Stop.

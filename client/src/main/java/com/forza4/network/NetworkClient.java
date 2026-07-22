@@ -46,12 +46,6 @@ public class NetworkClient {
         }
     }
 
-    // FIX: prima si faceva polling ogni 50ms su input.available(), il che
-    // aggiungeva fino a 50ms di latenza per ogni messaggio (percepibile su una
-    // board che deve aggiornarsi "in tempo reale" ad ogni mossa) oltre a
-    // sprecare CPU. readLine() su un BufferedReader si blocca finche' non
-    // arriva una riga completa (i messaggi sono terminati da \n lato server),
-    // quindi e' sia piu' reattivo che piu' semplice.
     private void startMessageReaderThread() {
         messageReaderThread = new Thread(() -> {
             try {

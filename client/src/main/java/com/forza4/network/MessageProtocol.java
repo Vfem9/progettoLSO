@@ -6,8 +6,7 @@ import com.google.gson.JsonParser;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-// Classe per parsare e serializzare i messaggi JSON del protocollo, e per le
-// costanti condivise con il protocollo del server (protocol.h).
+
 public class MessageProtocol {
 
     public static final String TYPE_REQUEST = "REQUEST";
@@ -17,9 +16,8 @@ public class MessageProtocol {
     public static final String ACTION_REGISTER = "register";
     public static final String ACTION_CREATE_MATCH = "create_match";
     public static final String ACTION_LIST_MATCHES = "list_matches";
-    // FIX: ACTION_JOIN_MATCH ora e' solo una RICHIESTA di partecipazione,
-    // non un ingresso immediato in partita: il creatore deve accettarla
-    // (ACTION_ACCEPT_JOIN) o rifiutarla (ACTION_REJECT_JOIN) esplicitamente.
+
+    // RICHIESTA di partecipazione,
     public static final String ACTION_JOIN_MATCH = "join_match";
     public static final String ACTION_ACCEPT_JOIN = "accept_join";
     public static final String ACTION_REJECT_JOIN = "reject_join";
@@ -37,10 +35,6 @@ public class MessageProtocol {
     public static final String ACTION_JOIN_REQUEST_PROMOTED = "join_request_promoted"; // a chi era in coda: la sua richiesta e' ora in decisione
     public static final String ACTION_MATCH_UNAVAILABLE = "match_unavailable"; // broadcast: una partita non e' piu' disponibile (avviata da altri)
 
-    // FIX: prima non c'era un contatore univoco, i vari punti del codice
-    // riusavano msg_id fissi ("msg_001" ecc.) per ogni richiesta dello stesso
-    // tipo. Non rompeva il protocollo (il server si limita a echeggiare
-    // msg_id), ma rendeva impossibile correlare richiesta/risposta lato client.
     private static final AtomicLong MSG_COUNTER = new AtomicLong(0);
 
     private static String nextMsgId() {
@@ -101,13 +95,6 @@ public class MessageProtocol {
         return -1;
     }
 
-    // Crea un messaggio REQUEST con payload come oggetto JSON annidato (non stringa).
-    // FIX: la versione precedente usava json.addProperty("payload", payload) con
-    // payload di tipo String: Gson lo serializzava come STRINGA JSON con le
-    // graffe escapate (es. "payload":"{\"match_id\":\"x\"}"), non come oggetto
-    // annidato. Il server invece si aspetta "payload":{...} senza quote. Il
-    // metodo non veniva mai usato proprio per questo (GameController costruiva
-    // il JSON a mano); ora e' corretto e riutilizzabile.
     public static String createRequestMessage(String action, JsonObject payload) {
         JsonObject json = new JsonObject();
         json.addProperty("type", TYPE_REQUEST);

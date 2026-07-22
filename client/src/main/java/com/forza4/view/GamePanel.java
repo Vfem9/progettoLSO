@@ -25,14 +25,7 @@ import com.forza4.controller.GameController;
 public class GamePanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
-    // FIX estetico: prima la board veniva disegnata dentro un JPanel messo in
-    // BorderLayout.CENTER, che in Swing viene STIRATO per riempire tutto lo
-    // spazio disponibile della finestra; siccome il disegno usava sempre le
-    // stesse coordinate fisse in alto a sinistra, il resto dell'area (blu)
-    // restava vuoto -> la board sembrava "non centrata" con un grande sfondo
-    // blu intorno. Ora il pannello della board ha dimensione fissa e viene
-    // centrato con un GridBagLayout "vuoto" (che di default centra invece di
-    // stirare), e lo sfondo e' bianco/chiaro invece che blu.
+    // Disegno e colori della board e dei dischi, coerenti con lo stile di Forza4.
     private static final Color BG_PAGE = new Color(245, 246, 248);
     private static final Color BOARD_BG = Color.WHITE;
     private static final Color BOARD_BORDER = new Color(210, 213, 219);
@@ -49,12 +42,7 @@ public class GamePanel extends JPanel {
     private JPanel boardArea;
     private JLabel statusLabel;
 
-    // FIX: avviso temporaneo (es. "X si e' unito alla partita!") mostrato
-    // sopra la board per 2 secondi e poi rimosso da solo, come richiesto
-    // dall'utente ("semplicemente come avviso che scompare da solo dopo 2
-    // secondi"). Il flag impedisce che repaint()/updateStatusLabel() (che
-    // gira ad ogni ridisegno) sovrascriva il banner prima dello scadere del
-    // timer.
+    // FIX: avviso temporaneo (es. "X si e' unito alla partita!") 
     private boolean showingBanner = false;
     private Timer bannerTimer;
     private static final Color BANNER_BG = new Color(56, 142, 60);
@@ -95,10 +83,6 @@ public class GamePanel extends JPanel {
             }
         });
 
-        // Contenitore "vuoto" con GridBagLayout: a differenza di BorderLayout,
-        // di default CENTRA il componente figlio invece di stirarlo a
-        // riempire tutto lo spazio. E' questo che risolve la board non
-        // centrata.
         JPanel centerWrapper = new JPanel(new GridBagLayout());
         centerWrapper.setBackground(BG_PAGE);
         centerWrapper.add(boardArea, new GridBagConstraints());
@@ -109,12 +93,7 @@ public class GamePanel extends JPanel {
         JButton lobbyButton = new JButton("Torna alla Lobby");
         lobbyButton.setFocusPainted(false);
         lobbyButton.setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 16));
-        // FIX: prima chiamava returnToLobby() direttamente, senza avvisare
-        // nessuno - usato a meta' partita, l'avversario restava a fissare la
-        // board per sempre in attesa di una mossa che non sarebbe mai
-        // arrivata. leaveMatch() avvisa il server, che si occupa di
-        // notificare l'avversario in modo appropriato allo stato della
-        // partita (abbandono se attiva, ecc.).
+        // Gestisce l'evento di click sul pulsante "Torna alla Lobby" per lasciare la partita.
         lobbyButton.addActionListener(e -> {
             if (controller != null) {
                 controller.leaveMatch();
@@ -142,9 +121,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    // FIX principale: prima repaint() ridisegnava solo il vecchio contenuto
-    // del model (mai aggiornato) e non toccava mai l'etichetta di stato.
-    // Ora ogni repaint sincronizza anche testo del turno/esito.
+
     @Override
     public void repaint() {
         super.repaint();
@@ -178,13 +155,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    // FIX: prima il testo del turno era preso da un GameModel.getCurrentTurn()
-    // che nessuno aggiornava mai; qui riflette lo stato reale sincronizzato
-    // dal controller ad ogni messaggio del server.
-    // Mostra un avviso temporaneo (verde) al posto della normale etichetta di
-    // stato per ~2 secondi, poi ripristina automaticamente il testo normale.
-    // Usato per "Ti sei unito alla partita di X!" / "X si e' unito alla
-    // partita!".
+    // Unione alla partita
     public void showTemporaryBanner(String text) {
         if (statusLabel == null) return;
 
@@ -207,9 +178,7 @@ public class GamePanel extends JPanel {
 
     private void updateStatusLabel() {
         if (statusLabel == null) return;
-        // Mentre un banner temporaneo e' visibile, non sovrascriverlo: i vari
-        // repaint() (es. arrivo di una mossa, ridisegno periodico) altrimenti
-        // lo cancellerebbero immediatamente dopo averlo mostrato.
+
         if (showingBanner) return;
 
         int myNumber = gameModel.getMyPlayerNumber();

@@ -31,11 +31,7 @@ typedef struct {
     time_t finished_at;
     pthread_mutex_t mutex;
 
-    /* FIX: prima chi cliccava "unisciti" entrava subito in partita. Ora e'
-       solo una richiesta che il creatore deve accettare/rifiutare
-       esplicitamente. Questi campi tracciano la richiesta attualmente in
-       decisione, quelle in coda (se il creatore sta gia' valutando qualcun
-       altro) e chi e' gia' stato rifiutato (non puo' ri-richiedere). */
+    // FIX: per gestire correttamente le richieste di partecipazione.
     int pending_requester_id;                  /* -1 se nessuna richiesta in decisione */
     int join_queue[MAX_JOIN_QUEUE];
     int join_queue_count;

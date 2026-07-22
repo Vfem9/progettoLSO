@@ -11,12 +11,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import com.forza4.controller.GameController;
 
-// FIX: nuovo pannello dedicato mostrato a chi ha appena richiesto di
-// partecipare a una partita, mentre aspetta che il creatore accetti o
-// rifiuti. Prima chi cliccava "Unisciti a Partita" entrava subito nella
-// partita: ora deve prima aspettare una decisione, e questa schermata
-// (con un bottone "Annulla richiesta") gli da' un feedback chiaro invece
-// di lasciarlo a fissare la lobby senza sapere cosa sta succedendo.
+// Pull panel mostrato quando un giocatore ha richiesto di unirsi a una partita e sta aspettando la risposta del creatore.
 public class JoinWaitingPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 

@@ -31,10 +31,6 @@ public class MainFrame extends JFrame {
     }
 
     public void switchToGamePanel() {
-        // FIX: se esisteva gia' un GamePanel (es. rivincita sulla stessa
-        // partita) lo ricreiamo comunque per garantire che il MouseListener e
-        // lo stato grafico siano coerenti col model aggiornato; e' un'
-        // operazione leggera (Swing) quindi non e' un problema di performance.
         gamePanel = new GamePanel(gameModel, gameController);
         setContentPane(gamePanel);
         gamePanel.revalidate();
@@ -49,9 +45,8 @@ public class MainFrame extends JFrame {
         System.out.println("Tornato al LobbyPanel!");
     }
 
-    // FIX: nuova schermata mostrata a chi ha richiesto di partecipare a una
-    // partita, in attesa che il creatore accetti o rifiuti. Ricreata ogni
-    // volta come gamePanel per coerenza (operazione leggera).
+    // Schermata mostrata a chi ha richiesto di partecipare a una
+    // partita, in attesa che il creatore accetti o rifiuti.
     public void switchToJoinWaitingPanel() {
         joinWaitingPanel = new JoinWaitingPanel(gameController);
         setContentPane(joinWaitingPanel);

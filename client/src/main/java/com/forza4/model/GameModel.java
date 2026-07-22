@@ -7,10 +7,7 @@ public class GameModel {
     public static final int STATE_WAITING = 1;   // creata, in attesa dell'avversario
     public static final int STATE_ACTIVE = 2;    // partita in corso
     public static final int STATE_FINISHED = 3;  // vittoria/pareggio/abbandono
-    // FIX: nuovo stato per chi ha appena richiesto di unirsi a una partita e
-    // sta aspettando che il creatore accetti/rifiuti (schermata di attesa
-    // dedicata, distinta da STATE_WAITING che invece e' quella del creatore
-    // che aspetta un avversario con la board gia' visibile).
+    // Stato per chi ha richiesto di unirsi a una partita e sta aspettando la risposta del creatore.
     public static final int STATE_JOIN_PENDING = 4;
 
     private int[][] board;              // Board 6x7 (0 = vuoto, 1 = rosso, 2 = giallo)
@@ -23,11 +20,7 @@ public class GameModel {
     private int opponentId = -1;
     private String opponentUsername;    // username scelto dall'avversario (server -> client)
     private int matchState = STATE_NONE;
-    // FIX: "0" come sentinella di "nessuno/pareggio" collideva col vero
-    // player_id del primo client connesso al server (gli id partono da 0):
-    // quando quel giocatore vinceva, winnerId valeva 0 sia per "ha vinto lui"
-    // sia per "nessun vincitore", ed entrambi i client mostravano "Hai perso".
-    // -1 non e' mai un player_id valido, quindi e' una sentinella sicura.
+
     private int winnerId = -1;          // player_id del vincitore, -1 se nessuno/pareggio
 
     public GameModel() {
@@ -128,7 +121,7 @@ public class GameModel {
         this.winnerId = winnerId;
     }
 
-    // true se il colore/simbolo di questo client corrisponde al turno attuale
+    // true se il colore di questo client corrisponde al turno attuale
     public boolean isMyTurn() {
         return matchState == STATE_ACTIVE && myPlayerNumber != 0 && myPlayerNumber == currentTurn;
     }

@@ -19,19 +19,15 @@ public class GameController implements NetworkClient.MessageListener {
     private MainFrame mainFrame;
 
     // Riferimento al popup "Hai perso, in attesa dell'avversario" mostrato a
-    // chi ha perso. Lo teniamo qui cosi', quando arriva la vera decisione
+    // chi ha perso. Quando arriva la vera decisione
     // dell'avversario (rivincita o abbandono), possiamo chiuderlo noi stessi
     // invece di lasciare che si accumuli un secondo dialog sopra.
     private JDialog waitingDialog;
 
-    // FIX: popup "il creatore sta valutando un'altra richiesta" mostrato a
-    // chi finisce in coda. Prima non veniva mai chiuso in automatico: se nel
-    // frattempo la richiesta davanti in coda si liberava (rifiutata o
-    // annullata) e la propria veniva promossa, questo popup restava aperto
-    // per sempre (bug segnalato dall'utente). Tracciato qui per poterlo
-    // chiudere programmaticamente non appena arriva ACTION_JOIN_REQUEST_PROMOTED.
+    // Popup "il creatore sta valutando un'altra richiesta" mostrato a chi finisce in coda.
     private JDialog queuedInfoDialog;
 
+    // Inizializza modello, connessione di rete e collega il controller alla lobby.
     public GameController(LobbyPanel lobbyPanel) {
         this.lobbyPanel = lobbyPanel;
         this.gameModel = new GameModel();
@@ -45,11 +41,7 @@ public class GameController implements NetworkClient.MessageListener {
         this.mainFrame = mainFrame;
     }
 
-    // FIX: prima il client non si registrava mai (Main.java mandava solo un
-    // "ping" di debug che il server non gestisce), oppure si registrava con
-    // uno username generato in automatico senza mai chiedere nulla
-    // all'utente. Ora l'username arriva da chi chiama (Main.java lo chiede
-    // con un dialog all'avvio) e viene usato per la registrazione reale.
+    // Il client registra l'username scelto dal giocatore e ottiene un player_id dal server.
     public void connectToServer(String username) {
         try {
             networkClient.connect();
@@ -88,11 +80,6 @@ public class GameController implements NetworkClient.MessageListener {
     }
 
     public void makeMove(String matchId, int column) {
-        // FIX: prima non veniva controllato affatto se fosse il proprio turno,
-        // il client mandava la mossa e basta lasciando fare tutto il lavoro di
-        // validazione al server (che comunque la rifiuta, ma senza dare un
-        // buon feedback prima di questa serie di fix). Filtriamo qui per una
-        // UX piu' pulita; il server resta comunque l'autorita' finale.
         if (!gameModel.isMyTurn()) {
             System.out.println("Non e' il tuo turno, mossa ignorata lato client.");
             return;
@@ -124,14 +111,6 @@ public class GameController implements NetworkClient.MessageListener {
 
     @Override
     public void onMessageReceived(String rawMessage) {
-        // FIX: il parsing arrivava direttamente sul thread di lettura della rete
-        // (NetworkClient.messageReaderThread) e da li' venivano chiamati
-        // direttamente metodi Swing (repaint, switchToGamePanel, aggiornamento
-        // liste...) violando la regola "un solo thread tocca la UI" di Swing.
-        // Poteva causare glitch grafici intermittenti, particolarmente fastidiosi
-        // per una board che deve aggiornarsi ad ogni mossa. Ora tutto il
-        // trattamento del messaggio (parsing incluso, per semplicita') gira
-        // sull'Event Dispatch Thread.
         SwingUtilities.invokeLater(() -> handleMessage(rawMessage));
     }
 
@@ -153,9 +132,6 @@ public class GameController implements NetworkClient.MessageListener {
 
         System.out.println("Type: " + type + ", Action: " + action);
 
-        // FIX: prima il campo "error" della risposta non veniva mai controllato.
-        // Se il server rispondeva con "Not your turn", "Match not found" ecc.
-        // l'utente non vedeva assolutamente nulla.
         if (!error.isEmpty()) {
             handleError(action, error);
             return;
@@ -182,10 +158,7 @@ public class GameController implements NetworkClient.MessageListener {
             int playerId = payload.has("player_id") ? payload.get("player_id").getAsInt() : -1;
             gameModel.setMyPlayerId(playerId);
             System.out.println("Registrato con player_id = " + playerId);
-            // FIX: prima si poteva creare/unirsi a una partita anche prima
-            // che la registrazione fosse confermata dal server (i bottoni
-            // erano sempre attivi). Ora la lobby li tiene disabilitati finche'
-            // non arriva questa risposta.
+            // Controllo per evitare che un giocatore avvii più partite contemporaneamente.
             lobbyPanel.setInteractionEnabled(true);
             listMatches();
         }
@@ -196,10 +169,7 @@ public class GameController implements NetworkClient.MessageListener {
                 for (int i = 0; i < matches.size(); i++) {
                     JsonObject match = matches.get(i).getAsJsonObject();
                     String matchId = match.get("match_id").getAsString();
-                    // FIX: prima veniva mostrato solo l'id numerico del creatore
-                    // ("Creator: 3"), poco leggibile. Il server ora manda anche
-                    // "creator_username" (il nome scelto da chi ha creato la
-                    // partita), che usiamo qui al posto del numero.
+                    // Vengono mostrati gli username scelti dai due giocatori in partita.
                     String creatorUsername = match.has("creator_username")
                         ? match.get("creator_username").getAsString()
                         : String.valueOf(match.get("creator").getAsInt());
@@ -218,14 +188,7 @@ public class GameController implements NetworkClient.MessageListener {
             }
         }
         else if (MessageProtocol.ACTION_JOIN_MATCH.equals(action)) {
-            // FIX: prima questa risposta significava "sei entrato subito in
-            // partita". Ora e' solo la conferma che la RICHIESTA e' stata
-            // ricevuta: puo' essere "pending" (il creatore la sta valutando
-            // adesso) o "queued" (il creatore sta gia' valutando qualcun
-            // altro, questa e' in coda). In entrambi i casi si passa a una
-            // schermata di attesa dedicata con un bottone per annullare; il
-            // vero ingresso in partita arriva poi come NOTIFICATION
-            // ACTION_MATCH_STARTED, se/quando il creatore accetta.
+            // Schermata di attesa (JoinWaitingPanel) per chi ha richiesto di partecipare, in attesa che il creatore accetti o rifiuti. 
             String status = payload.has("status") ? payload.get("status").getAsString() : "";
             String creatorUsername = payload.has("creator_username") ? payload.get("creator_username").getAsString() : "Il creatore";
             String matchId = payload.has("match_id") ? payload.get("match_id").getAsString() : null;
@@ -243,37 +206,17 @@ public class GameController implements NetworkClient.MessageListener {
             }
 
             if ("queued".equals(status)) {
-                // FIX: prima era un JOptionPane.showMessageDialog statico,
-                // impossibile da chiudere via codice. Ora e' un JDialog vero
-                // e proprio, tracciato in `queuedInfoDialog`, cosi' possiamo
-                // disporlo noi stessi non appena arriva la promozione dalla
-                // coda (o comunque la richiesta smette di essere valida),
-                // invece di lasciarlo aperto per sempre.
                 JOptionPane pane = new JOptionPane(
                     creatorUsername + " sta valutando un'altra richiesta.\nLa tua richiesta e' in coda.",
                     JOptionPane.INFORMATION_MESSAGE);
                 queuedInfoDialog = pane.createDialog(mainFrame, "Richiesta in coda");
-                queuedInfoDialog.setVisible(true); // si sblocca anche da solo, vedi closeQueuedInfoDialogIfOpen()
+                queuedInfoDialog.setVisible(true);
                 queuedInfoDialog = null;
             }
         }
-        // ACTION_MOVE in RESPONSE arriva solo in caso di errore (gia' gestito
-        // sopra da handleError), quindi qui non c'e' altro da fare.
+
         else if (MessageProtocol.ACTION_REMATCH.equals(action)) {
-            // FIX (fedelta' alla traccia): prima la risposta era un "ok"
-            // muto, lo stato vero arrivava sempre e solo con la NOTIFICATION
-            // match_started poco dopo. Ora la risposta puo' portare essa
-            // stessa lo stato in due casi nuovi:
-            // - "new_session": sono il vincitore e ho aperto una nuova
-            //   sessione di cui sono proprietario - mi comporto come se
-            //   avessi appena creato una partita da zero (torno in stato di
-            //   attesa, board vuota, nessun avversario ancora assegnato).
-            // - "waiting_for_opponent_vote": e' un pareggio, ho votato "si"
-            //   ma l'altro giocatore non ha ancora deciso - resto in attesa,
-            //   nessun cambio di stato locale.
-            // Il caso "ok" semplice (pareggio, entrambi hanno votato si) non
-            // richiede nulla qui: lo stato vero arriva con la NOTIFICATION
-            // match_started, esattamente come prima.
+            // Chi vince decide se aprire una nuova sessione o meno. Chi perde puo' solo accettare o rifiutare la rivincita.
             String status = payload.has("status") ? payload.get("status").getAsString() : "ok";
             if ("new_session".equals(status)) {
                 gameModel.setOpponentId(-1);
@@ -297,27 +240,15 @@ public class GameController implements NetworkClient.MessageListener {
         if (MessageProtocol.ACTION_MATCH_STARTED.equals(action)) {
             // Se chi ha perso stava ancora guardando il popup "in attesa
             // dell'avversario" e l'avversario ha appena avviato una
-            // rivincita, chiudiamolo: la nuova board che sta per arrivare e'
-            // di per se' la risposta.
+            // rivincita, lo chiudiamo
             closeWaitingDialogIfOpen();
             closeQueuedInfoDialogIfOpen();
 
-            // FIX: bisogna distinguere TRE casi possibili, leggendo lo stato
-            // PRIMA di sovrascriverlo con applyMatchState:
-            // - STATE_WAITING: ero il creatore in attesa, il creatore ora ha
-            //   accettato una richiesta -> avviso "X si e' unito alla partita!"
-            // - STATE_JOIN_PENDING: avevo richiesto IO di partecipare ed e'
-            //   arrivata l'accettazione -> avviso "Ti sei unito alla partita
-            //   di X!"
-            // - STATE_FINISHED: e' una rivincita -> nessun avviso, si rientra
-            //   semplicemente in partita.
+            // Gestione notifiche per chi ha creato la partita e per chi ha richiesto di partecipare.
             boolean wasCreatorWaiting = gameModel.getMatchState() == GameModel.STATE_WAITING;
             boolean wasJoinPending = gameModel.getMatchState() == GameModel.STATE_JOIN_PENDING;
 
-            // FIX: prima il creatore della partita non veniva MAI avvisato che
-            // l'avversario si era unito: restava bloccato a guardare una board
-            // vuota senza sapere che poteva giocare. Questa notifica (mandata
-            // anche dopo una rivincita) sblocca la board per entrambi.
+            // Notifica il creatore che l'avversario si è unito alla partita.
             int playerNumber = payload.has("player_number") ? payload.get("player_number").getAsInt() : gameModel.getMyPlayerNumber();
             applyMatchState(payload, playerNumber);
             gameModel.setMatchState(GameModel.STATE_ACTIVE);
@@ -338,9 +269,7 @@ public class GameController implements NetworkClient.MessageListener {
             }
         }
         else if (MessageProtocol.ACTION_JOIN_REQUEST.equals(action)) {
-            // FIX: nuovo passaggio richiesto dall'utente - il creatore non
-            // accetta piu' automaticamente chi si unisce, deve confermarlo
-            // esplicitamente con un popup si/no.
+            // Il creatore può accettare o rifiutare le richeste di partecipazione.
             String requesterUsername = payload.has("requester_username") ? payload.get("requester_username").getAsString() : "Un giocatore";
             String matchId = payload.has("match_id") ? payload.get("match_id").getAsString() : gameModel.getCurrentMatchId();
 
@@ -357,9 +286,7 @@ public class GameController implements NetworkClient.MessageListener {
             }
         }
         else if (MessageProtocol.ACTION_JOIN_REQUEST_REJECTED.equals(action)) {
-            // FIX: chi aveva richiesto di partecipare ora viene avvisato se
-            // il creatore rifiuta, invece di restare bloccato per sempre
-            // nella schermata di attesa.
+            // Notifica che il creatore ha rifiutato la richiesta di partecipazione.
             closeQueuedInfoDialogIfOpen();
             String creatorUsername = payload.has("creator_username") ? payload.get("creator_username").getAsString() : "Il creatore";
             JOptionPane.showMessageDialog(mainFrame,
@@ -368,8 +295,7 @@ public class GameController implements NetworkClient.MessageListener {
             returnToLobby();
         }
         else if (MessageProtocol.ACTION_JOIN_REQUEST_OBSOLETE.equals(action)) {
-            // Chi era in coda (o in decisione) quando la partita e' stata
-            // chiusa dal creatore, oppure e' iniziata con qualcun altro.
+            // Notifica che la partita a cui si voleva partecipare non è più disponibile (perché l'avversario ha iniziato la partita con qualcun altro o l'ha chiusa).
             closeQueuedInfoDialogIfOpen();
             String reason = payload.has("reason") ? payload.get("reason").getAsString() : "closed";
             String message = "started".equals(reason)
@@ -379,30 +305,14 @@ public class GameController implements NetworkClient.MessageListener {
             returnToLobby();
         }
         else if (MessageProtocol.ACTION_MATCH_UNAVAILABLE.equals(action)) {
-            // FIX (fedelta' alla traccia): prima gli altri client scoprivano
-            // che una partita non era piu' disponibile solo al refresh
-            // periodico della lobby (fino a 3s dopo). Ora il server manda
-            // subito questo avviso broadcast a tutti tranne i due
-            // partecipanti: aggiorniamo la lista immediatamente. Se non
-            // siamo in lobby in questo momento (es. si e' gia' in un'altra
-            // partita) la chiamata e' comunque innocua.
+            // Aggiorna la lista dei match.
             listMatches();
         }
         else if (MessageProtocol.ACTION_JOIN_REQUEST_PROMOTED.equals(action)) {
-            // FIX: bug segnalato dall'utente - chi era in coda vedeva il
-            // popup "il creatore sta valutando un'altra richiesta" restare
-            // aperto per sempre anche dopo essere stato promosso (la
-            // richiesta davanti e' stata rifiutata/annullata). Ora lo
-            // chiudiamo noi stessi non appena arriva questa notifica: non
-            // serve altro, il client resta gia' nella schermata di attesa
-            // (JoinWaitingPanel) in entrambi i casi (in coda o in decisione).
+
             closeQueuedInfoDialogIfOpen();
         }
         else if (MessageProtocol.ACTION_MOVE.equals(action)) {
-            // FIX principale lato client: prima la mossa non veniva mai scritta
-            // nel model (ne' per chi giocava ne' tantomeno per l'avversario, che
-            // non riceveva proprio nulla dal server). Ora scriviamo la board
-            // ricevuta e ridisegniamo.
             int[][] board = parseBoard(payload);
             gameModel.setBoard(board);
 
@@ -410,16 +320,7 @@ public class GameController implements NetworkClient.MessageListener {
                 gameModel.setCurrentTurn(payload.get("current_turn").getAsInt());
             }
 
-            // FIX: repaint() veniva chiamato QUI, prima di scrivere nel model
-            // l'esito della partita (matchState/winnerId) qualche riga sotto.
-            // Per chi vinceva o pareggiava non si notava (ci pensava comunque
-            // il JOptionPane a dare il verdetto), ma per chi perdeva - che dal
-            // fix precedente non ha piu' nessun popup, solo l'etichetta di
-            // stato nel GamePanel - il repaint ridisegnava l'etichetta CON LO
-            // STATO VECCHIO (partita ancora attiva), perche' matchState/
-            // winnerId non erano ancora stati aggiornati. Risultato: "Hai
-            // perso" non compariva mai. Ora aggiorniamo prima tutto lo stato
-            // e solo alla fine chiediamo un unico repaint.
+            // Controlla se la partita è finita (vittoria, sconfitta o pareggio).
             String status = payload.has("status") ? payload.get("status").getAsString() : "ok";
             boolean gameOver = "win".equals(status) || "draw".equals(status);
             if (gameOver) {
@@ -437,11 +338,7 @@ public class GameController implements NetworkClient.MessageListener {
             }
         }
         else if (MessageProtocol.ACTION_OPPONENT_LEFT.equals(action)) {
-            // FIX: prima una disconnessione dell'avversario lasciava l'altro
-            // giocatore in attesa per sempre, senza nessun avviso. Lo stesso
-            // valeva se l'avversario cliccava "Torna alla Lobby" a meta'
-            // partita invece di disconnettersi davvero - il server distingue
-            // i due casi col campo "reason" cosi' mostriamo il messaggio giusto.
+            // Gestione abbandono partita da parte dell'avversario (sia durante la partita che in attesa di una rivincita).
             closeWaitingDialogIfOpen();
             gameModel.setMatchState(GameModel.STATE_FINISHED);
             gameModel.setWinnerId(gameModel.getMyPlayerId());
@@ -454,13 +351,7 @@ public class GameController implements NetworkClient.MessageListener {
             returnToLobby();
         }
         else if (MessageProtocol.ACTION_MATCH_CLOSED.equals(action)) {
-            // FIX: quando il vincitore rifiutava la rivincita (o comunque
-            // l'avversario lasciava una partita gia' finita), l'altro
-            // giocatore non veniva mai avvisato e restava bloccato a
-            // guardare "Hai perso"/"Hai vinto" per sempre. Chiudiamo prima
-            // l'eventuale popup "in attesa dell'avversario" (se e' ancora
-            // aperto, evitando che si accumuli sopra questo) e mostriamo
-            // l'unico dialog reale con l'esito.
+            // Gestione chiusura partita da parte dell'avversario (sia durante la partita che in attesa di una rivincita).
             closeWaitingDialogIfOpen();
             if (gameModel.getMatchState() == GameModel.STATE_FINISHED) {
                 JOptionPane.showMessageDialog(mainFrame,
@@ -471,11 +362,7 @@ public class GameController implements NetworkClient.MessageListener {
         }
     }
 
-    // Chiude il popup "in attesa dell'avversario" se e' ancora aperto (chi ha
-    // perso lo sta ancora guardando quando arriva la vera decisione
-    // dell'avversario). dispose() su un JDialog modale ancora visibile fa
-    // ritornare la chiamata bloccante che lo aveva aperto (setVisible(true)),
-    // quindi non serve altro per "sbloccarlo".
+    // Chiude il popup "in attesa dell'avversario" mostrato a chi ha perso, se e' ancora aperto. Serve per evitare che si accumulino due dialog uno sopra l'altro quando l'avversario avvia una rivincita.
     private void closeWaitingDialogIfOpen() {
         if (waitingDialog != null && waitingDialog.isShowing()) {
             waitingDialog.dispose();
@@ -483,9 +370,7 @@ public class GameController implements NetworkClient.MessageListener {
         waitingDialog = null;
     }
 
-    // Stesso meccanismo di closeWaitingDialogIfOpen(), ma per il popup "in
-    // coda" mostrato a chi ha richiesto di partecipare mentre il creatore
-    // stava gia' valutando qualcun altro.
+
     private void closeQueuedInfoDialogIfOpen() {
         if (queuedInfoDialog != null && queuedInfoDialog.isShowing()) {
             queuedInfoDialog.dispose();
@@ -503,9 +388,7 @@ public class GameController implements NetworkClient.MessageListener {
         if (payload.has("opponent_id")) {
             gameModel.setOpponentId(payload.get("opponent_id").getAsInt());
         }
-        // FIX: il server ora manda anche "opponent_username" (il nome scelto
-        // dall'altro giocatore) in create_match/join_match/match_started;
-        // lo salviamo nel model per poterlo mostrare negli avvisi in GamePanel.
+
         if (payload.has("opponent_username")) {
             gameModel.setOpponentUsername(payload.get("opponent_username").getAsString());
         }
@@ -530,20 +413,7 @@ public class GameController implements NetworkClient.MessageListener {
         return board;
     }
 
-    // Dialog di fine partita.
-    //
-    // FIX (fedelta' alla traccia): prima QUALSIASI dei due giocatori poteva
-    // far ripartire la partita da solo (bastava un "Si", l'altro veniva
-    // riunito automaticamente). La traccia invece distingue due casi:
-    // - Vittoria/sconfitta: "il perdente e' obbligato a lasciare la
-    //   partita" - niente scelta, solo un avviso, poi si esce subito. "Il
-    //   vincitore... puo' decidere di creare una nuova sessione,
-    //   diventando automaticamente il nuovo proprietario" - la nuova
-    //   sessione torna in stato di attesa ed e' aperta a chiunque in lobby,
-    //   non necessariamente allo stesso avversario di prima.
-    // - Pareggio: "entrambi i giocatori hanno la possibilita' di scegliere
-    //   CONGIUNTAMENTE se effettuare una nuova partita" - serve il consenso
-    //   di entrambi, non basta che uno solo lo richieda.
+    // Dialog di fine partita. Solo il vincitore può decidere se aprire una nuova sessione o meno. Il perdente può solo accettare o rifiutare la rivincita.
     private void showGameOverDialog(boolean isDraw) {
         boolean iWon = gameModel.amIWinner();
 
@@ -554,8 +424,7 @@ public class GameController implements NetworkClient.MessageListener {
             if (choice == JOptionPane.YES_OPTION) {
                 requestRematch();
             } else {
-                // Avvisiamo il server (che a sua volta avvisa l'eventuale
-                // avversario in attesa via ACTION_MATCH_CLOSED).
+
                 leaveMatch();
             }
         } else if (iWon) {
@@ -569,26 +438,13 @@ public class GameController implements NetworkClient.MessageListener {
                 leaveMatch();
             }
         } else {
-            // FIX: prima chi perdeva vedeva un popup "in attesa che
-            // l'avversario decida" e restava bloccato finche' il vincitore
-            // non sceglieva. La traccia impone invece che il perdente sia
-            // OBBLIGATO a lasciare la partita, senza alcuna scelta ne'
-            // attesa: la decisione del vincitore (aprire una nuova sessione
-            // o no) e' del tutto indipendente e non lo riguarda piu'.
             JOptionPane.showMessageDialog(mainFrame,
                 "Hai perso.", "Partita terminata", JOptionPane.INFORMATION_MESSAGE);
             leaveMatch();
         }
     }
 
-    // FIX: prima GamePanel chiamava direttamente returnToLobby() per il
-    // bottone "Torna alla Lobby", senza mai avvisare il server - se usato a
-    // meta' partita, l'avversario restava a fissare la board per sempre. Ora
-    // questo metodo e' pubblico e usato sia da qui (rifiuto rivincita) sia
-    // dal bottone di GamePanel: il server (ACTION_QUIT_MATCH) decide da solo
-    // il da farsi in base allo stato della partita (abbandono se attiva,
-    // semplice chiusura se gia' finita, nessun avviso se non c'era ancora
-    // un avversario).
+    // Avviso al server che il giocatore vuole abbandonare la partita. Poi torna in lobby.
     public void leaveMatch() {
         String matchId = gameModel.getCurrentMatchId();
         if (matchId != null) {
@@ -599,11 +455,7 @@ public class GameController implements NetworkClient.MessageListener {
         returnToLobby();
     }
 
-    // FIX: nuovo metodo per il bottone "Annulla richiesta" della schermata
-    // di attesa (JoinWaitingPanel). Avvisa il server che la richiesta di
-    // partecipazione (in decisione o ancora in coda) non interessa piu',
-    // cosi' il creatore non resta a valutare una richiesta di qualcuno che
-    // se n'e' gia' andato.
+    // Metodo "Annulla Richiesta" per chi ha richiesto di partecipare a una partita e si trova in attesa della risposta del creatore. Invia un messaggio al server per annullare la richiesta e torna in lobby.
     public void cancelJoinRequest() {
         closeQueuedInfoDialogIfOpen();
         String matchId = gameModel.getCurrentMatchId();

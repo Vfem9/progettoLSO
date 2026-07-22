@@ -36,21 +36,11 @@ public class LobbyPanel extends JPanel {
     private static final Color TEXT_DARK = new Color(33, 37, 41);
     private static final Color TEXT_MUTED = new Color(120, 126, 133);
     private static final Color PILL_WAITING = new Color(255, 152, 0);
-    // FIX: richiesto dall'utente - le partite in corso ora restano visibili
-    // in lobby (invece di sparire del tutto) con un badge grigio "IN CORSO",
-    // per distinguerle a colpo d'occhio da quelle ancora disponibili
-    // (arancioni, "IN ATTESA"/"RICHIESTA IN CORSO").
+    // Le partite in corso sono visibili ma non unibili: badge grigio scuro.
     private static final Color PILL_ACTIVE = new Color(117, 117, 117);
     private static final Color BORDER_LIGHT = new Color(210, 213, 219);
 
-    // Il formato che GameController usa per ogni riga e' sempre
-    // "<matchId> (Creator: <username>, Status: <status>)" - lo interpretiamo
-    // qui per disegnare una card invece del testo grezzo, senza dover cambiare
-    // il controller.
-    // FIX: prima il gruppo "Creator" accettava solo cifre (\\d+), perche' il
-    // server mandava l'id numerico del creatore. Ora manda il suo username
-    // (testo libero), quindi il gruppo accetta qualsiasi carattere tranne la
-    // virgola (che resta il separatore verso ", Status: ...").
+    // Info partita: "<match_id> (Creator: <username>, Status: <status>)"
     private static final Pattern MATCH_INFO_PATTERN =
         Pattern.compile("^(.+) \\(Creator: ([^,]+), Status: (\\w+)\\)$");
 
@@ -66,10 +56,7 @@ public class LobbyPanel extends JPanel {
     private CardLayout listCardLayout;
     private JPanel listCardsPanel;
 
-    // Aggiorna la lista da solo ogni pochi secondi mentre la lobby e'
-    // visibile, cosi' non serve piu' cliccare sempre "Ricarica" a mano.
-    // Si ferma automaticamente quando si passa al pannello di gioco (vedi
-    // HierarchyListener piu' sotto), per non sprecare richieste inutili.
+    // Aggiorna la lista delle lobby.
     private final Timer autoRefreshTimer;
 
     private GameController controller;
@@ -98,11 +85,7 @@ public class LobbyPanel extends JPanel {
         joinMatchButton = styledButton("→  Unisciti a Partita", Color.WHITE, ACCENT);
         refreshButton = styledButton("⟳  Ricarica", Color.WHITE, TEXT_DARK);
 
-        // FIX: prima si poteva creare/unirsi a una partita anche prima che il
-        // client fosse effettivamente registrato sul server (i bottoni erano
-        // sempre attivi fin da subito). Li disabilitiamo qui e li riattiva il
-        // GameController (setInteractionEnabled) solo alla conferma di
-        // registrazione.
+        // Controlla che l'utente sia registrato prima di unire/creare partite.
         createMatchButton.setEnabled(false);
         joinMatchButton.setEnabled(false);
 
@@ -175,9 +158,6 @@ public class LobbyPanel extends JPanel {
     private JButton styledButton(String text, Color bg, Color fg) {
         JButton button = new JButton(text);
         button.setFocusPainted(false);
-        // setOpaque/setContentAreaFilled: su alcuni Look and Feel nativi
-        // (es. Windows) setBackground da solo viene ignorato dal renderer del
-        // bottone. Questi due flag forzano Swing a rispettare il colore.
         button.setOpaque(true);
         button.setContentAreaFilled(true);
         button.setBackground(bg);
@@ -221,8 +201,7 @@ public class LobbyPanel extends JPanel {
 
     // Abilita/disabilita "Crea Partita" e "Unisciti a Partita". Usato dal
     // GameController per sbloccarli solo dopo che il server ha confermato la
-    // registrazione (prima non c'era alcun controllo: si poteva provare a
-    // creare/unirsi a una partita anche a registrazione non ancora avvenuta).
+    // registrazione
     public void setInteractionEnabled(boolean enabled) {
         createMatchButton.setEnabled(enabled);
         joinMatchButton.setEnabled(enabled);
@@ -246,9 +225,7 @@ public class LobbyPanel extends JPanel {
         return matchesList.getSelectedValue();
     }
 
-    // Renderer "a card": parsa la stringa grezza di ogni riga e la mostra
-    // come titolo + sottotitolo + badge di stato colorato, invece del testo
-    // concatenato originale.
+
     private class MatchCellRenderer extends JPanel implements ListCellRenderer<String> {
         private static final long serialVersionUID = 1L;
         private final JLabel titleLabel = new JLabel();
@@ -286,22 +263,13 @@ public class LobbyPanel extends JPanel {
                 String status = matcher.group(3);
 
                 if ("active".equalsIgnoreCase(status)) {
-                    // FIX: richiesto dall'utente - mentre due giocatori
-                    // stanno giocando, gli altri devono comunque VEDERE che
-                    // la partita esiste, ma sapere che e' in corso e non
-                    // disponibile, invece di vederla sparire e basta dalla
-                    // lista (che lasciava intendere che non fosse mai
-                    // esistita). Nessun invito a cliccare: non e' unibile.
+                    // Mentre una partita e' in corso, non si puo' piu' unire: mostriamo
+                    // un badge grigio scuro "IN CORSO"
                     titleLabel.setText("Partita di " + creatorUsername);
                     subtitleLabel.setText("In corso, non disponibile");
                     statusPill.setText("IN CORSO");
                     statusPill.setPillColor(PILL_ACTIVE);
                 } else {
-                    // FIX: testo allineato a quanto richiesto dall'utente:
-                    // "<username creatore> ha avviato una partita", con un
-                    // invito esplicito a cliccare per partecipare al posto
-                    // del match_id tecnico (poco significativo per l'utente
-                    // finale).
                     titleLabel.setText(creatorUsername + " ha avviato una partita");
                     subtitleLabel.setText("Clicca per partecipare");
                     if ("pending".equalsIgnoreCase(status)) {
@@ -333,8 +301,6 @@ public class LobbyPanel extends JPanel {
         }
     }
 
-    // Piccola JLabel con sfondo "a pillola" arrotondato, usata per il badge
-    // di stato nella lista partite.
     private static class PillLabel extends JLabel {
         private static final long serialVersionUID = 1L;
         private Color pillColor = PILL_WAITING;

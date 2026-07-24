@@ -7,7 +7,7 @@ make.exe all --print-data-base --no-builtin-variables --no-builtin-rules --quest
 
 # This program built for i386-pc-mingw32
 
-# Make data base, printed on Wed Jul 22 22:06:55 2026
+# Make data base, printed on Fri Jul 24 14:18:51 2026
 
 # Variables
 
@@ -60,8 +60,6 @@ COMMONPROGRAMW6432 = C:\Program Files\Common Files
 # environment
 ZES_ENABLE_SYSMAN = 1
 # environment
-EFC_13588_4126798990 = 1
-# environment
 CHOCOLATEYLASTPATHUPDATE = 134290141168014281
 # environment
 PROCESSOR_ARCHITECTURE = x86
@@ -80,11 +78,13 @@ ELECTRON_RUN_AS_NODE = 1
 # automatic
 %F = $(notdir $%)
 # environment
-CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_1904_LCTUQPSITDLTPVTC
+CHROME_CRASHPAD_PIPE_NAME = \\.\pipe\crashpad_35716_WKIJZNPCDCFOKFRR
 # environment
 COMPUTERNAME = RISIKOS
 # environment
 PROGRAMFILES = C:\Program Files (x86)
+# environment
+EFC_17360_1592913036 = 1
 # environment
 DRIVERDATA = C:\Windows\System32\Drivers\DriverData
 # environment
@@ -168,9 +168,9 @@ MAKEFILES :=
 # automatic
 <F = $(notdir $<)
 # environment
-LC_ALL = C
+EFC_17360_4126798990 = 1
 # environment
-EFC_13588_1592913036 = 1
+LC_ALL = C
 # automatic
 ^F = $(notdir $^)
 # default
@@ -188,7 +188,7 @@ LANG = C
 # environment
 PROCESSOR_LEVEL = 6
 # environment
-VSCODE_PID = 1904
+VSCODE_PID = 35716
 # environment
 USERDOMAIN_ROAMINGPROFILE = RISIKOS
 # variable set hash-table stats:
@@ -212,7 +212,7 @@ USERDOMAIN_ROAMINGPROFILE = RISIKOS
 # C:\WINDOWS (key C:/WINDOWS, mtime 1784480998): 108 files, no impossibilities.
 # C:\maven\apache-maven-3.9.16\bin (key C:/maven/apache-maven-3.9.16/bin, mtime 1784484005): 8 files, no impossibilities.
 # C:\Users\pasqu\AppData\Local\GitHubDesktop\bin (key C:/Users/pasqu/AppData/Local/GitHubDesktop/bin, mtime 1784480103): 4 files, no impossibilities.
-# C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps (key C:/Users/pasqu/AppData/Local/Microsoft/WindowsApps, mtime 1784664362): 45 files, no impossibilities.
+# C:\Users\pasqu\AppData\Local\Microsoft\WindowsApps (key C:/Users/pasqu/AppData/Local/Microsoft/WindowsApps, mtime 1784884848): 45 files, no impossibilities.
 # C:\gcc\mingw64\bin (key C:/gcc/mingw64/bin, mtime 1779711451): 60 files, no impossibilities.
 # C:\Users\pasqu\Desktop\Universit� nuova\LSO\apache-maven-3.9.16-bin: could not be stat'd.
 # C:\Program Files\Git\cmd (key C:/Program Files/Git/cmd, mtime 1784478439): 13 files, no impossibilities.
@@ -260,7 +260,8 @@ makefile:
 
 # Not a target:
 GNUmakefile:
-#  A default, MAKEFILES, or -include/sinclude makefile.
+#  A 
+ default, MAKEFILES, or -include/sinclude makefile.
 #  Implicit rule search has been done.
 #  File does not exist.
 #  File has been updated.
@@ -278,11 +279,12 @@ GNUmakefile:
 
 # # of strings in strcache: 0
 # # of strcache buffers: 0
-# strcache size: total = 0 / max = 0 / min = 4096 / avg = 0
-# strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
-
-# Finished Make data base on Wed Jul 22 22:06:55 2026
-
- 
+# strcache size: total = 0 / max = 0 / min 
 make.exe: *** No rule to make target `all'.  Stop.
 
+ = 4096 / avg = 0
+# strcache free: total = 0 / max = 0 / min = 4096 / avg = 0
+
+# Finished Make data base on Fri Jul 24 14:18:51 2026
+
+ 

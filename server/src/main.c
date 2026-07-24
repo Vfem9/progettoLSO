@@ -234,23 +234,41 @@ void* client_thread_handler(void* args) {
 
     printf("Thread client %d avviato\n", player_id);
 
+    /* FIX (framing dei messaggi): buffer di riassemblaggio dedicato a
+       questa connessione (vive sullo stack del thread, un thread per
+       client: nessuna condivisione, nessun mutex necessario). Vedi i
+       commenti su RecvBuffer in network.h e dentro receive_message(). */
+    RecvBuffer recv_buf;
+    recv_buffer_init(&recv_buf);
+
     while (1) {
-        fd_set readfds;
-        struct timeval tv;
+        /* FIX: se il buffer contiene gia' una riga completa (es. due
+           messaggi del client arrivati insieme in una singola recv())
+           elaboriamola subito, senza aspettare altro traffico di rete:
+           select() qui sotto puo' dire "nessun dato pronto" anche quando
+           in realta' abbiamo gia' un messaggio intero bufferizzato
+           localmente, aspettato per errore fino al prossimo dato sul
+           socket (che potrebbe non arrivare mai). */
+        int has_buffered_line = (memchr(recv_buf.buf, '\n', (size_t)recv_buf.len) != NULL);
 
-        FD_ZERO(&readfds);
-        FD_SET(client_socket, &readfds);
+        if (!has_buffered_line) {
+            fd_set readfds;
+            struct timeval tv;
 
-        tv.tv_sec = 0;
-        tv.tv_usec = 500000;
+            FD_ZERO(&readfds);
+            FD_SET(client_socket, &readfds);
 
-        int select_result = select(client_socket + 1, &readfds, NULL, NULL, &tv);
+            tv.tv_sec = 0;
+            tv.tv_usec = 500000;
 
-        if (select_result <= 0) {
-            continue;
+            int select_result = select(client_socket + 1, &readfds, NULL, NULL, &tv);
+
+            if (select_result <= 0) {
+                continue;
+            }
         }
 
-        Message msg = receive_message(client_socket);
+        Message msg = receive_message(client_socket, &recv_buf);
 
         /* FIX: l'ordine dei due controlli era invertito. Quando il client si
            disconnette, receive_message() ritorna un Message con type vuoto E
@@ -345,7 +363,36 @@ void* client_thread_handler(void* args) {
         else if (strcmp(msg.action, ACTION_LIST_MATCHES) == 0) {
             sync_lock_matches();
 
-            char payload[2048] = "{\"matches\":[";
+            /* FIX (robustezza, scoperto durante una revisione approfondita):
+               la vecchia versione accumulava le voci con strcat() dentro
+               payload[2048] SENZA MAI controllare quanto spazio restava, poi
+               copiava il risultato con strcpy() dentro response.payload che
+               nel Message (protocol.h) e' grande solo 1024 byte. Con
+               abbastanza partite visibili insieme (bastano circa 7-11, a
+               seconda della lunghezza degli username) questo scriveva oltre
+               i limiti di entrambi i buffer: comportamento indefinito, nel
+               peggiore dei casi un crash del thread server. Costruiamo ora
+               il payload direttamente dentro un buffer grande ESATTAMENTE
+               come response.payload, con un append "sicuro" (stesso pattern
+               gia' usato in build_board_json) che non scrive mai oltre i
+               suoi limiti: se lo spazio finisce, smettiamo semplicemente di
+               aggiungere altre partite alla lista invece di corrompere la
+               memoria. Con il numero di partite di una sessione normale
+               questo limite non viene mai nemmeno avvicinato. */
+            char payload[sizeof(response.payload)];
+            size_t pos = 0;
+            payload[0] = '\0';
+
+#define LIST_APPEND(str_val) do { \
+            size_t len_ = strlen(str_val); \
+            if (pos + len_ < sizeof(payload)) { \
+                memcpy(payload + pos, str_val, len_); \
+                pos += len_; \
+                payload[pos] = '\0'; \
+            } \
+        } while (0)
+
+            LIST_APPEND("{\"matches\":[");
             int first = 1;
 
             for (int i = 0; i < matches_count; i++) {
@@ -364,8 +411,6 @@ void* client_thread_handler(void* args) {
                    utile e la lista crescerebbe all'infinito. */
                 MatchState st = matches[i]->state;
                 if (st == WAITING_FOR_OPPONENT || st == JOIN_PENDING || st == ACTIVE) {
-                    if (!first) strcat(payload, ",");
-
                     /* FIX: la lista partite mostrava solo l'id numerico del
                        creatore. Aggiungiamo anche il suo username, cosi' la
                        lobby puo' mostrare "Partita di <nome>" invece di un
@@ -379,16 +424,27 @@ void* client_thread_handler(void* args) {
 
                     char match_info[512];
                     snprintf(match_info, sizeof(match_info),
-                        "{\"match_id\":\"%s\",\"creator\":%d,\"creator_username\":\"%s\",\"status\":\"%s\"}",
+                        "%s{\"match_id\":\"%s\",\"creator\":%d,\"creator_username\":\"%s\",\"status\":\"%s\"}",
+                        first ? "" : ",",
                         matches[i]->match_id, matches[i]->creator_id, creator_username_esc, status_str);
-                    strcat(payload, match_info);
+
+                    /* Se questa voce non ci sta piu' (lasciando spazio per il
+                       "]}" finale), ci fermiamo qui: il client vedra' solo le
+                       prime partite invece che tutte, decisamente meglio di
+                       un buffer overflow lato server. */
+                    if (pos + strlen(match_info) >= sizeof(payload) - 3) {
+                        break;
+                    }
+                    LIST_APPEND(match_info);
                     first = 0;
                 }
             }
 
-            strcat(payload, "]}");
+            LIST_APPEND("]}");
+#undef LIST_APPEND
+
             strcpy(response.action, ACTION_LIST_MATCHES);
-            strcpy(response.payload, payload);
+            strcpy(response.payload, payload); /* sicuro: stessa dimensione di payload[] */
 
             printf("Lista partite inviata a giocatore %d\n", player_id);
             send_response(player_id, &response);
@@ -1096,7 +1152,25 @@ int main() {
             continue;
         }
 
-        Player* new_player = (Player*)malloc(sizeof(Player));
+        /* FIX (robustezza, scoperto durante una revisione approfondita):
+           malloc() NON azzera la memoria. Player.username e' un char[64]
+           riempito solo in parte da strcpy("Unknown") qui e poi da
+           strncpy(..., n) al momento della registrazione: strncpy scrive
+           SEMPRE esattamente n byte (n = sizeof(username)-1) ma non tocca
+           MAI l'ultimo byte dell'array (l'indice sizeof(username)-1), che
+           quindi restava garbage non inizializzata proveniente da malloc()
+           invece di un sicuro '\0' - stesso problema per current_match_id.
+           In pratica su Linux spesso "funziona" comunque perche' il kernel
+           tende a restituire pagine fresche gia' azzerate, ma non e'
+           garantito dallo standard C ed e' fragile: se quel byte finale
+           risultasse non-zero, ogni lettura della stringa (strlen, printf,
+           json_escape...) andrebbe oltre i limiti dei 64 byte dell'array
+           cercando un terminatore che non c'e', leggendo memoria adiacente
+           non sua. calloc() azzera tutta la struct in partenza, eliminando
+           del tutto il problema per username, current_match_id ed eventuali
+           campi futuri, senza cambiare alcun comportamento per i campi gia'
+           impostati esplicitamente qui sotto. */
+        Player* new_player = (Player*)calloc(1, sizeof(Player));
         new_player->player_id = player_id_counter++;
         new_player->socket_fd = client_socket;
         new_player->state = PLAYER_CONNECTED;

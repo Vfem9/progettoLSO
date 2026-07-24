@@ -116,40 +116,126 @@ int send_message(int socket_fd, const Message* msg) {
 
     char buffer[4096];
     snprintf(buffer, sizeof(buffer), "%s\n", json_str);
-
-    int bytes_sent = send((SOCKET)socket_fd, buffer, (int)strlen(buffer), 0);
-
     free(json_str);
 
-    if (bytes_sent == SOCKET_ERROR) {
-        printf("Errore: impossibile inviare messaggio\n");
-        return 0;
+    /* FIX (robustezza, scoperto durante una revisione approfondita): il
+       socket e' non bloccante (set_nonblocking in accept_client_connection),
+       quindi send() puo' legittimamente scrivere MENO byte di quanti
+       richiesti (invio parziale) o fallire momentaneamente perche' il
+       buffer di invio del kernel e' pieno, senza che sia un errore reale.
+       La vecchia versione faceva una singola send() e considerava
+       "riuscito" qualsiasi risultato diverso da SOCKET_ERROR: un invio
+       parziale avrebbe perso silenziosamente il resto del messaggio
+       (compreso il '\n' finale), corrompendo il framing lato client, che
+       si aspetta ogni riga terminata correttamente. Con i messaggi piccoli
+       di questo protocollo (sotto i 2KB, ben sotto i buffer di invio tipici
+       del sistema operativo) questo non si e' mai manifestato nei nostri
+       test, ma non era comunque garantito. Ora ritentiamo finche' tutto il
+       messaggio non e' stato inviato, con un limite di tentativi per non
+       restare bloccati per sempre se la connessione e' davvero caduta. */
+    size_t total_len = strlen(buffer);
+    size_t sent_so_far = 0;
+    int stall_count = 0;
+
+    while (sent_so_far < total_len) {
+        int bytes_sent = send((SOCKET)socket_fd, buffer + sent_so_far, (int)(total_len - sent_so_far), 0);
+
+        if (bytes_sent > 0) {
+            sent_so_far += (size_t)bytes_sent;
+            stall_count = 0;
+            continue;
+        }
+
+        stall_count++;
+        if (stall_count > 2000) {
+            printf("Errore: impossibile inviare messaggio (connessione bloccata o caduta)\n");
+            return 0;
+        }
     }
 
     return 1;
 }
 
-Message receive_message(int socket_fd) {
-    char buffer[2048];
-    memset(buffer, 0, sizeof(buffer));
+void recv_buffer_init(RecvBuffer* rb) {
+    rb->len = 0;
+    rb->buf[0] = '\0';
+}
 
-    int bytes_received = recv((SOCKET)socket_fd, buffer, sizeof(buffer) - 1, 0);
-
+/* FIX (framing dei messaggi): vedi il commento su RecvBuffer in network.h.
+   Ogni chiamata:
+   1) se il buffer di riassemblaggio contiene gia' un '\n' (avanzato da una
+      chiamata precedente, es. due messaggi arrivati insieme), estrae ed
+      elabora SUBITO quella riga, senza toccare la rete;
+   2) altrimenti prova a leggere altri byte dal socket e li accoda al
+      buffer, poi ricontrolla se ora c'e' un '\n';
+   3) se ancora non c'e' una riga completa, ritorna un Message vuoto (il
+      chiamante in main.c lo interpreta come "nessun messaggio pronto",
+      esattamente come prima in caso di nessun dato disponibile) SENZA
+      scartare i byte gia' accumulati: verranno completati alla prossima
+      chiamata. */
+Message receive_message(int socket_fd, RecvBuffer* rb) {
     Message msg;
     memset(&msg, 0, sizeof(Message));
 
-    if (bytes_received < 0) {
-        /* Socket non-bloccante: nessun dato disponibile (o errore reale, ignorato qui) */
-        strcpy(msg.error, "");
-        return msg;
+    char* newline = (char*)memchr(rb->buf, '\n', (size_t)rb->len);
+
+    if (newline == NULL) {
+        char chunk[2048];
+        int bytes_received = recv((SOCKET)socket_fd, chunk, sizeof(chunk), 0);
+
+        if (bytes_received < 0) {
+            /* Socket non-bloccante: nessun dato disponibile adesso (o errore
+               reale, ignorato qui come faceva gia' il codice originale). */
+            return msg;
+        }
+
+        if (bytes_received == 0) {
+            strcpy(msg.error, "Connessione chiusa");
+            return msg;
+        }
+
+        /* Protezione overflow: un client che manda un "messaggio" senza mai
+           un '\n' piu' grande del buffer non deve poter scrivere fuori dai
+           limiti. Nel protocollo normale non dovrebbe mai succedere (i
+           messaggi restano ben sotto 2KB), quindi trattarlo come un errore
+           di protocollo e scartare il buffer e' una risposta ragionevole. */
+        if (rb->len + bytes_received > (int)sizeof(rb->buf) - 1) {
+            rb->len = 0;
+            rb->buf[0] = '\0';
+            strcpy(msg.error, "Messaggio malformato o troppo grande");
+            return msg;
+        }
+
+        memcpy(rb->buf + rb->len, chunk, (size_t)bytes_received);
+        rb->len += bytes_received;
+        rb->buf[rb->len] = '\0';
+
+        newline = (char*)memchr(rb->buf, '\n', (size_t)rb->len);
+        if (newline == NULL) {
+            /* Messaggio ancora incompleto: aspettiamo il resto alla
+               prossima chiamata, senza scartare nulla. */
+            return msg;
+        }
     }
 
-    if (bytes_received == 0) {
-        strcpy(msg.error, "Connessione chiusa");
-        return msg;
-    }
+    int line_len = (int)(newline - rb->buf);
+    char line[4096];
+    int copy_len = (line_len < (int)sizeof(line) - 1) ? line_len : (int)sizeof(line) - 1;
+    memcpy(line, rb->buf, (size_t)copy_len);
+    line[copy_len] = '\0';
 
-    msg = parse_json_message(buffer);
+    /* Consuma la riga (incluso il '\n') e sposta all'inizio del buffer
+       l'eventuale resto gia' arrivato (es. l'inizio del messaggio
+       successivo, se erano arrivati insieme). */
+    int consumed = line_len + 1;
+    int remaining = rb->len - consumed;
+    if (remaining > 0) {
+        memmove(rb->buf, rb->buf + consumed, (size_t)remaining);
+    }
+    rb->len = remaining;
+    rb->buf[rb->len] = '\0';
+
+    msg = parse_json_message(line);
     return msg;
 }
 
